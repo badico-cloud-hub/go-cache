@@ -21,13 +21,13 @@ func NewCacheDynamo(accessKeyId, secretAccessKey, defaultRegion, tableName strin
 }
 
 //Set is persist cache of payload with key in dynamo
-func (p *CacheDynamo) Set(key, payload string, seconds int) error {
+func (p *CacheDynamo) Set(key, payload string, seconds int) (int, error) {
 	expiration := utils.GetExpiration(seconds)
 	err := p.client.Create(key, payload, expiration)
 	if err != nil {
-		return err
+		return 0, err
 	}
-	return nil
+	return expiration, nil
 }
 
 //Get return value of dynamo with key
