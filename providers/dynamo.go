@@ -31,10 +31,10 @@ func (p *CacheDynamo) Set(key, payload string, seconds int) error {
 }
 
 //Get return value of dynamo with key
-func (p *CacheDynamo) Get(key string) (string, error) {
-	result, err := p.client.Get(key)
+func (p *CacheDynamo) Get(key string) (string, int, error) {
+	result, exp, err := p.client.Get(key)
 	if err != nil {
-		return "", err
+		return "", 0, err
 	}
-	return result, nil
+	return result, exp, nil
 }

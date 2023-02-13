@@ -45,12 +45,12 @@ func (dy *Dynamo) Create(key, payload string, expiration int) error {
 }
 
 //Get return item of dynamo
-func (dy *Dynamo) Get(key string) (string, error) {
-	result, err := dy.client.get(key)
+func (dy *Dynamo) Get(key string) (string, int, error) {
+	result, exp, err := dy.client.get(key)
 	if err != nil {
-		return "", err
+		return "", 0, err
 	}
-	return result, nil
+	return result, exp, nil
 
 }
 
@@ -69,11 +69,11 @@ func (d *dynamodbClient) setup(accessKey, secretKey, region, tableName string) e
 	return nil
 }
 
-func (d *dynamodbClient) get(key string) (string, error) {
+func (d *dynamodbClient) get(key string) (string, int, error) {
 	keyCond := expression.Key("PK").Equal(expression.Value(fmt.Sprintf("CACHE_KEY#%s", key)))
 	expr, err := expression.NewBuilder().WithKeyCondition(keyCond).Build()
 	if err != nil {
-		return "", err
+		return "", 0, err
 	}
 
 	input := &dynamodb.QueryInput{
@@ -87,17 +87,17 @@ func (d *dynamodbClient) get(key string) (string, error) {
 	defer cancel()
 	output, err := d.client.QueryWithContext(ctx, input)
 	if err != nil {
-		return "", err
+		return "", 0, err
 	}
 	caches := []entity.Cache{}
 	if err := dynamodbattribute.UnmarshalListOfMaps(output.Items, &caches); err != nil {
-		return "", err
+		return "", 0, err
 	}
 	if *output.Count == 0 {
-		return "", ErrCacheNotFound
+		return "", 0, ErrCacheNotFound
 	}
 
-	return caches[0].Value, nil
+	return caches[0].Value, caches[0].Expiration, nil
 }
 
 func (d *dynamodbClient) create(key, payload string, expiration int) error {

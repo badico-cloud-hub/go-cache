@@ -55,7 +55,7 @@ func TestDynamoGetItem(t *testing.T) {
 	if dynamo == nil {
 		t.Errorf("TestDynamoGetItem: expect(!nil) - got(nil)\n")
 	}
-	payload, err := dynamo.Get("test")
+	payload, _, err := dynamo.Get("test")
 	if err != nil {
 		t.Errorf("TestDynamoGetItem: expect(nil) - got(%s)\n", err.Error())
 	}
